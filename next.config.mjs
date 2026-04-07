@@ -1,10 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Use webpack for production builds (lighter than turbopack)
-  // Turbopack only enabled in dev mode via --turbopack flag
-  
-  // Optimize for deployment - creates minimal standalone output
+  // ✅ Optimize for deployment - creates minimal standalone output
   output: 'standalone',
+  
+  // ✅ Disable Turbopack for production (Webpack is stable)
+  // Turbopack only for local dev via --turbopack flag
+  turbo: {
+    // Empty config disables it for build
+  },
+  
+  // ✅ Ensure distDir is relative (default is fine)
+  // DO NOT set distDir to absolute path
   
   // Environment-specific image optimization
   images: {
@@ -15,10 +21,9 @@ const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   
-  // Silences workspace root warning (only affects turbopack dev mode)
-  // The parent lockfile at /Users/nanansomanan/package-lock.json is unrelated to this project
+  // Fix workspace warning (only affects turbopack dev mode)
   turbopack: {
-    root: '/Users/nanansomanan/Documents/GitHub/blaster-v1',
+    root: process.cwd(), // Use dynamic path, not hardcoded
   },
 }
 

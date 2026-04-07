@@ -2,9 +2,10 @@
 nixpkgs = "nixpkgs/nixos-23.11"
 providers = ["node"]
 
-# Paksa Nixpacks pakai Node.js 20
 [variables]
 NIXPACKS_NODE_VERSION = "20"
+# ✅ Force disable Turbopack for build
+NEXT_TURBOPACK = "0"
 
 [phases.install]
 cmds = ["npm ci --ignore-scripts"]
