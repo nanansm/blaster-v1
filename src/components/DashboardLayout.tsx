@@ -1,7 +1,15 @@
 import { ReactNode } from 'react'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
-import { User } from 'next-auth'
+
+interface User {
+  id?: string | null
+  name?: string | null
+  email?: string | null
+  image?: string | null
+  plan?: string | null
+  isAdmin?: boolean | null
+}
 
 interface DashboardLayoutProps {
   children: ReactNode

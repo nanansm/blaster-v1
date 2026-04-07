@@ -1,18 +1,21 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { DashboardLayout } from '@/components/DashboardLayout'
+import { headers } from 'next/headers'
 
 export default async function AdminRootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  // For local testing: provide a mock session if auth fails
+  // Get session from Better Auth
   let session
   try {
-    session = await auth()
+    session = await auth.api.getSession({
+      headers: await headers(),
+    })
   } catch (error) {
-    // If auth fails (no DB), create a mock session with admin rights
+    // If auth fails, create a mock session for local testing
     console.log('Auth not available, using mock admin session')
     session = {
       user: {

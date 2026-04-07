@@ -1,11 +1,8 @@
-import { auth } from '@/lib/auth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Megaphone, Users, MessageSquare, Smartphone } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
 export default async function DashboardPage() {
-  const session = await auth()
-
   // Mock data for testing
   const mockStats = {
     totalCampaigns: 12,

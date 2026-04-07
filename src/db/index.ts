@@ -1,20 +1,17 @@
-// Database connection - optional for local UI testing
+// Database connection
+import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
+import * as schema from './schema'
 
-let db: any = null
+const connectionString = process.env.DATABASE_URL
 
-try {
-  if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('dummy')) {
-    const { drizzle } = await import('drizzle-orm/postgres-js')
-    const postgres = await import('postgres')
-
-    const client = postgres.default(process.env.DATABASE_URL)
-    db = drizzle(client)
-    console.log('✅ Database connected')
-  } else {
-    console.log('⚠️  Database not configured - running in UI-only mode')
-  }
-} catch (error) {
-  console.log('⚠️  Database connection failed - running in UI-only mode')
+if (!connectionString || connectionString.includes('dummy')) {
+  console.log('⚠️  Database not configured - running in UI-only mode')
 }
 
-export { db }
+const client = connectionString && !connectionString.includes('dummy') 
+  ? postgres(connectionString)
+  : null
+
+export const db = client ? drizzle(client, { schema }) : null
+

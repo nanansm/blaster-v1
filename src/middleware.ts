@@ -1,36 +1,66 @@
-// Simplified middleware for local testing - skips auth checks
-// In production, this should be replaced with proper auth middleware
-
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-// Only apply middleware in mock mode or dev
-const isMockMode = process.env.NEXT_PUBLIC_MOCK_MODE === 'true'
-const isDev = process.env.NODE_ENV === 'development'
+// Public paths that don't require authentication
+const publicPaths = [
+  '/signin',
+  '/api/auth',
+  '/api/health',
+  '/_next',
+  '/favicon.ico',
+]
 
-export function middleware(request: NextRequest) {
-  // In mock mode or development, allow all requests
-  if (isMockMode || isDev) {
+// Paths that require authentication
+const protectedPaths = [
+  '/dashboard',
+  '/admin',
+  '/campaigns',
+  '/instances',
+  '/contacts',
+  '/settings',
+]
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Skip middleware for public paths
+  const isPublicPath = publicPaths.some(
+    (path) => pathname.startsWith(path)
+  )
+
+  if (isPublicPath) {
     return NextResponse.next()
   }
+
+  // For now, allow all requests in development mode
+  // In production, implement proper session validation
+  const isDev = process.env.NODE_ENV === 'development'
   
-  // In production, you should implement proper auth checks here
-  // For now, just pass through
-  return NextResponse.next()
+  if (isDev) {
+    return NextResponse.next()
+  }
+
+  // Production: Check session
+  try {
+    const sessionCookie = request.cookies.get('better-auth.session_token')
+    
+    if (!sessionCookie && protectedPaths.some(path => pathname.startsWith(path))) {
+      const signinUrl = new URL('/signin', request.url)
+      signinUrl.searchParams.set('callbackUrl', pathname)
+      return NextResponse.redirect(signinUrl)
+    }
+
+    return NextResponse.next()
+  } catch (error) {
+    // If session check fails, redirect to signin
+    const signinUrl = new URL('/signin', request.url)
+    return NextResponse.redirect(signinUrl)
+  }
 }
 
 // Only match routes that need middleware processing
-// This excludes static files and API health checks
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - api routes that don't need auth
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder files
-     */
-    '/((?!api/health|_next/static|_next/image|favicon.ico|.*\\..*).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)',
   ],
 }

@@ -1,11 +1,8 @@
-import { auth } from '@/lib/auth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { DollarSign, Users, TrendingUp, Activity, Server } from 'lucide-react'
 
 export default async function AdminPage() {
-  const session = await auth()
-
   // Mock data for testing
   const mockFinancialData = {
     mrr: 2500000,

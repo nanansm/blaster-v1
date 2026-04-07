@@ -1,15 +1,36 @@
 'use client'
 
-import { User } from 'next-auth'
-import { signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { UserCircle, LogOut } from 'lucide-react'
+
+interface User {
+  id?: string | null
+  name?: string | null
+  email?: string | null
+  image?: string | null
+  plan?: string | null
+  isAdmin?: boolean | null
+}
 
 interface HeaderProps {
   user?: User | null
 }
 
 export function Header({ user }: HeaderProps) {
+  const handleSignOut = async () => {
+    try {
+      await fetch('/api/auth/sign-out', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      window.location.href = '/signin'
+    } catch (error) {
+      console.error('Sign out error:', error)
+    }
+  }
+
   return (
     <header className="header">
       <div className="header-content">
@@ -28,7 +49,7 @@ export function Header({ user }: HeaderProps) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => signOut({ callbackUrl: '/' })}
+                onClick={handleSignOut}
               >
                 <LogOut className="icon-sm" />
                 Logout
