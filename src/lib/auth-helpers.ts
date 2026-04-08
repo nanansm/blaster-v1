@@ -23,9 +23,9 @@ export async function requireAuth() {
 export async function isAdmin() {
   const user = await getCurrentUser()
   if (!user) return false
-  
+
   const adminEmails = process.env.ADMIN_EMAILS?.split(',') || []
-  return adminEmails.includes(user.email || '')
+  return adminEmails.includes(user.email || '') || (user as any).isAdmin === true
 }
 
 export async function getServerSession() {

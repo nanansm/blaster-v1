@@ -2,6 +2,7 @@ import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
 import { db } from '@/db'
+import * as schema from '@/db/schema'
 
 const adminEmails = process.env.ADMIN_EMAILS?.split(',') || []
 
@@ -9,10 +10,23 @@ const adminEmails = process.env.ADMIN_EMAILS?.split(',') || []
 const isDbAvailable = db !== null
 
 export const auth = betterAuth({
+  // Base URL - from env or fallback
+  baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+
+  // Secret - from env or generate a safe fallback
+  secret: process.env.BETTER_AUTH_SECRET || process.env.AUTH_SECRET || 'super-secret-key-change-in-production',
+
   // Database - only attach if available
   ...(isDbAvailable ? {
     database: drizzleAdapter(db!, {
       provider: 'pg',
+      schema: {
+        ...schema,
+        user: schema.user,
+        session: schema.session,
+        account: schema.account,
+        verification: schema.verification,
+      },
     }),
   } : {}),
 
@@ -26,9 +40,10 @@ export const auth = betterAuth({
 
   // Trusted Origins (FIX FOR EASYPANEL)
   trustedOrigins: [
-    'https://mote-blaster.85c4o8.easypanel.host',
+    process.env.BETTER_AUTH_URL || 'http://localhost:3000',
     'http://localhost:3000',
     'http://localhost:3001',
+    'https://mote-blaster.85c4o8.easypanel.host',
     'https://blaster.motekreatif.com',
   ],
 

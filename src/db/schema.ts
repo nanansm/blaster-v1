@@ -1,4 +1,59 @@
 import { pgTable, text, timestamp, integer, boolean, pgEnum, serial, json } from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm'
+
+// ===========================
+// BETTER AUTH TABLES
+// ===========================
+
+export const user = pgTable('user', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  email: text('email').notNull().unique(),
+  emailVerified: boolean('email_verified').default(false),
+  image: text('image'),
+  plan: text('plan').default('FREE'),
+  isAdmin: boolean('is_admin').default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+export const session = pgTable('session', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  expiresAt: timestamp('expires_at').notNull(),
+  token: text('token').notNull().unique(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+})
+
+export const account = pgTable('account', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  accountId: text('account_id').notNull(),
+  providerId: text('provider_id').notNull(),
+  accessToken: text('access_token'),
+  refreshToken: text('refresh_token'),
+  idToken: text('id_token'),
+  expiresAt: timestamp('expires_at'),
+  password: text('password'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+export const verification = pgTable('verification', {
+  id: text('id').primaryKey(),
+  identifier: text('identifier').notNull(),
+  value: text('value').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+// ===========================
+// APP TABLES (Mote Blaster)
+// ===========================
 
 // Enums
 export const planEnum = pgEnum('plan', ['FREE', 'PRO'])
@@ -105,6 +160,12 @@ export const queueJobs = pgTable('queue_jobs', {
 
 // Export all tables
 export const schema = {
+  // Better Auth tables
+  user,
+  session,
+  account,
+  verification,
+  // App tables
   users,
   subscriptions,
   instances,
