@@ -1,78 +1,53 @@
-import { betterAuth } from 'better-auth'
-import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { nextCookies } from 'better-auth/next-js'
-import { db } from '@/db'
-import * as schema from '@/db/schema'
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { getDb } from "./db";
+import * as schema from "./db/schema";
 
-const adminEmails = process.env.ADMIN_EMAILS?.split(',') || []
-
-// Check if database is available
-const isDbAvailable = db !== null
+const trustedOrigins = process.env.BETTER_AUTH_TRUSTED_ORIGINS
+  ? process.env.BETTER_AUTH_TRUSTED_ORIGINS.split(",")
+  : [process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"];
 
 export const auth = betterAuth({
-  // Base URL - from env or fallback
-  baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
-
-  // Secret - from env or generate a safe fallback
-  secret: process.env.BETTER_AUTH_SECRET || process.env.AUTH_SECRET || 'super-secret-key-change-in-production',
-
-  // Database - only attach if available
-  ...(isDbAvailable ? {
-    database: drizzleAdapter(db!, {
-      provider: 'pg',
-      schema: {
-        ...schema,
-        user: schema.user,
-        session: schema.session,
-        account: schema.account,
-        verification: schema.verification,
-      },
-    }),
-  } : {}),
-
-  // Social Providers
+  database: drizzleAdapter(getDb(), {
+    provider: "pg",
+    schema: {
+      user: schema.user,
+      session: schema.session,
+      account: schema.account,
+      verification: schema.verification,
+    },
+  }),
+  emailAndPassword: {
+    enabled: true,
+  },
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     },
   },
-
-  // Trusted Origins (FIX FOR EASYPANEL)
-  trustedOrigins: [
-    process.env.BETTER_AUTH_URL || 'http://localhost:3000',
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'https://mote-blaster.85c4o8.easypanel.host',
-    'https://blaster.motekreatif.com',
-  ],
-
-  // Session
-  session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // 1 day
-    cookieCache: {
-      enabled: true,
-      maxAge: 5 * 60, // 5 minutes
-    },
+  trustedOrigins,
+  advanced: {
+    cookiePrefix: "mote-blaster",
   },
-
-  // User account
   user: {
     additionalFields: {
       plan: {
-        type: 'string',
+        type: "string",
         required: false,
-        defaultValue: 'FREE',
+        defaultValue: "free",
+        input: false,
       },
-      isAdmin: {
-        type: 'boolean',
+      role: {
+        type: "string",
         required: false,
-        defaultValue: false,
+        defaultValue: "user",
+        input: false,
       },
     },
   },
-
-  // Plugins
-  plugins: [nextCookies()],
-})
+  session: {
+    expiresIn: 60 * 60 * 24 * 7, // 7 days
+    updateAge: 60 * 60 * 24, // 1 day
+  },
+});

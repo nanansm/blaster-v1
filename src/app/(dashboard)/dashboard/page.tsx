@@ -1,117 +1,90 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Megaphone, Users, MessageSquare, Smartphone } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { getSession } from "@/lib/auth-helpers";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Smartphone, Send, CheckCircle, XCircle } from "lucide-react";
 
 export default async function DashboardPage() {
-  // Mock data for testing
-  const mockStats = {
-    totalCampaigns: 12,
-    activeCampaigns: 3,
-    totalContacts: 2450,
-    messagesSent: 8934,
-    connectedInstances: 2,
-  }
-
-  const mockRecentActivity = [
-    { id: 1, type: 'Campaign', name: 'Product Launch Blast', status: 'Active', sent: 1250, total: 2000, date: '2026-04-05' },
-    { id: 2, type: 'Campaign', name: 'Weekly Promo', status: 'Completed', sent: 500, total: 500, date: '2026-04-04' },
-    { id: 3, type: 'Campaign', name: 'Event Reminder', status: 'Draft', sent: 0, total: 800, date: '2026-04-03' },
-  ]
+  const session = await getSession();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">
-          Overview of your WhatsApp blasting campaigns
+        <h1 className="text-3xl font-bold">Welcome, {session?.user?.name}</h1>
+        <p className="text-muted-foreground mt-1">
+          Here&apos;s an overview of your WhatsApp blast activity.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="stat-card-header">
-            <CardTitle className="text-sm font-medium">Total Campaigns</CardTitle>
-            <Megaphone className="icon-sm text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="stat-value">{mockStats.totalCampaigns}</div>
-            <p className="stat-description">
-              {mockStats.activeCampaigns} active campaigns
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="stat-card-header">
-            <CardTitle className="text-sm font-medium">Total Contacts</CardTitle>
-            <Users className="icon-sm text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="stat-value">{mockStats.totalContacts.toLocaleString()}</div>
-            <p className="stat-description">
-              Contacts in your database
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="stat-card-header">
-            <CardTitle className="text-sm font-medium">Messages Sent</CardTitle>
-            <MessageSquare className="icon-sm text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="stat-value">{mockStats.messagesSent.toLocaleString()}</div>
-            <p className="stat-description">
-              Total messages delivered
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="stat-card-header">
-            <CardTitle className="text-sm font-medium">WA Instances</CardTitle>
-            <Smartphone className="icon-sm text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="stat-value">{mockStats.connectedInstances}</div>
-            <p className="stat-description">
-              Connected WhatsApp instances
-            </p>
-          </CardContent>
-        </Card>
+      {/* Stats */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Connections"
+          value="0"
+          description="Active instances"
+          icon={Smartphone}
+        />
+        <StatCard
+          title="Campaigns"
+          value="0"
+          description="Total campaigns"
+          icon={Send}
+        />
+        <StatCard
+          title="Messages Sent"
+          value="0"
+          description="Successfully delivered"
+          icon={CheckCircle}
+        />
+        <StatCard
+          title="Messages Failed"
+          value="0"
+          description="Failed to deliver"
+          icon={XCircle}
+        />
       </div>
 
+      {/* Plan Info */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>
-            Your latest campaigns and message activity
-          </CardDescription>
+          <CardTitle>Your Plan</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {mockRecentActivity.map((activity) => (
-              <div key={activity.id} className="activity-item">
-                <div className="activity-info">
-                  <h4 className="font-semibold">{activity.name}</h4>
-                  <p className="text-sm text-muted-foreground">{activity.date}</p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="text-sm font-medium">{activity.sent} / {activity.total}</p>
-                    <p className="text-xs text-muted-foreground">messages sent</p>
-                  </div>
-                  <Badge
-                    variant={activity.status === 'Active' ? 'default' : activity.status === 'Completed' ? 'secondary' : 'outline'}
-                  >
-                    {activity.status}
-                  </Badge>
-                </div>
-              </div>
-            ))}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-2xl font-bold capitalize">
+                {session?.user?.plan || "free"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Daily limit: {session?.user?.plan === "pro" ? "Unlimited" : "50 messages/day"}
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
+}
+
+function StatCard({
+  title,
+  value,
+  description,
+  icon: Icon,
+}: {
+  title: string;
+  value: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+}) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <Icon className="h-4 w-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </CardContent>
+    </Card>
+  );
 }

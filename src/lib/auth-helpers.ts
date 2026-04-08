@@ -1,39 +1,26 @@
-import { auth } from './auth'
-import { headers } from 'next/headers'
+import { auth } from "./auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
-export async function getCurrentUser() {
-  try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    })
-    return session?.user || null
-  } catch (error) {
-    return null
-  }
+export async function getSession() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  return session;
 }
 
-export async function requireAuth() {
-  const user = await getCurrentUser()
-  if (!user) {
-    throw new Error('Unauthorized')
+export async function requireUser() {
+  const session = await getSession();
+  if (!session?.user) {
+    redirect("/login");
   }
-  return user
+  return session;
 }
 
-export async function isAdmin() {
-  const user = await getCurrentUser()
-  if (!user) return false
-
-  const adminEmails = process.env.ADMIN_EMAILS?.split(',') || []
-  return adminEmails.includes(user.email || '') || (user as any).isAdmin === true
-}
-
-export async function getServerSession() {
-  try {
-    return await auth.api.getSession({
-      headers: await headers(),
-    })
-  } catch (error) {
-    return null
+export async function requireOwner() {
+  const session = await requireUser();
+  if (session.user.role !== "owner") {
+    redirect("/dashboard");
   }
+  return session;
 }

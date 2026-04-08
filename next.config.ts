@@ -1,21 +1,18 @@
-import type { NextConfig } from 'next'
-import path from 'path'
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Create minimal standalone output for Easypanel deployment
-  output: 'standalone',
-
-  // Image optimization
-  images: {
-    formats: ['image/webp', 'image/avif'],
+  output: "standalone",
+  typescript: {
+    ignoreBuildErrors: false,
   },
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
+  },
+};
 
-  // Security & correctness
-  poweredByHeader: false,
-  reactStrictMode: true,
-
-  // Explicitly set the project root to avoid lockfile confusion
-  outputFileTracingRoot: path.join(__dirname, './'),
-}
-
-export default nextConfig
+export default nextConfig;
