@@ -1,13 +1,12 @@
 [phases.setup]
-nixpkgs = "nixpkgs/nixos-23.11"
+nixpkgs = "nixpkgs/nixos-24.05"
 providers = ["node"]
 
 [variables]
-# Paksa Nixpacks menggunakan Node.js versi 20
 NIXPACKS_NODE_VERSION = "20"
 
 [phases.install]
-cmds = ["npm ci --ignore-scripts"]
+cmds = ["npm ci"]
 
 [phases.build]
 cmds = ["npm run build"]
